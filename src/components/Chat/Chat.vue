@@ -9,6 +9,12 @@ import ChatMessage from './Partials/ChatMessage.vue';
 const messages = ref([]);
 const messagesQueue = ref([]);
 const executingQueue = ref(false);
+const pagination = ref({
+  page: 1,
+  perPage: 6,
+  total: 0,
+  lastPage: 0
+});
 
 const moveChatToBottom = () => {
   const chatContainer = document.getElementById('chat-container');
@@ -66,8 +72,7 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
       respostas.forEach(resposta => pushMessage(resposta, 1500));
 
       // exibe mensagem de finalização
-      pushMessage('Espero ter ajudado! 😊', 1000);
-      await handleMandarEscolherEmpresa('Caso precise ainda pode escolher outra ação:');
+      await handleMandarEscolherEmpresa('Espero ter ajudado! 😊 Caso precise ainda pode escolher outra ação:');
     })
     .catch(error => {
       console.log(error);
@@ -75,16 +80,22 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
 };
 
 const handleMandarEscolherEmpresa = async (title=null) => {
-  const { data } = await api.get(`bot/acoes?page=1`).catch(error => {
-    console.log(error);
-  });
-  const acoes = data.acoes;
-  if (!acoes) {
-    pushMessage('Não foi possível carregar as informações das ações. Tente novamente mais tarde.');
+  const result = await api.get(`bot/acoes?page=${pagination.value.page}&per_page=${pagination.value.perPage}`);
+  if (!result) {
+    pushMessage('Algo deu errado ao tentar me conectar com o servidor. 😔', 100);
+    pushMessage('Por favor, tente novamente mais tarde.', 100);
     return;
   }
+  const acoes = result.data.data;
+  if (acoes.length === 0) {
+    pushMessage('Não encontrei nenhuma ação para te mostrar. 😔', 100);
+    pushMessage('Por favor, tente novamente mais tarde.', 100);
+    return;
+  }
+  const { current_page, last_page, per_page, total } = result.data;
+  pagination.value = { page: current_page, lastPage: last_page, perPage: per_page, total };
   title = title || 'Escolha abaixo uma das ações para que eu possa te ajudar:';
-  pushMessage(title, 1000, acoes.map(empresa => {
+  const botoesEmpresas = acoes.map(empresa => {
     return {
       ...empresa,
       text: empresa.name,
@@ -95,18 +106,31 @@ const handleMandarEscolherEmpresa = async (title=null) => {
         pushMessage(`Ótimo! Vou buscar as informações sobre a ação ${empresa.name} para você...`, 1500);
         await api.get(`bot/acoes/${empresa.id}`)
           .then(({ data }) => {
-            pushMessage(`Ok! Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 4000, (data.perguntas || []).map(pergunta => {
+            const buttons = (data.perguntas || []).map(pergunta => {
               return {
                 text: pergunta.pergunta,
                 type: 'pergunta',
                 action: () => handleClickOnPergunta(empresa.id, pergunta)
               };
-            }));
+            });
+            pushMessage(`Ok! Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 4000, buttons);
           })
           .catch(error => console.log(error));
       }
     };
-  }));
+  });
+  if (pagination.value.page < pagination.value.lastPage) {
+    botoesEmpresas.push({
+      text: `Ver mais ações (${pagination.value.page}/${pagination.value.lastPage})`,
+      type: 'ver-mais',
+      action: async () => {
+        pagination.value.page++;
+        pushMessage('Quero ver mais ações...', 0, null, true);
+        await handleMandarEscolherEmpresa('Ótimo! Aqui estão mais ações para você escolher:');
+      }
+    });
+  }
+  pushMessage(title, 1000, botoesEmpresas);
 }
 
 onMounted(async () => {
@@ -147,6 +171,9 @@ onMounted(async () => {
   height: 440px;
   overflow: auto;
   padding: 0 20px;
+}
+.loading-container {
+  margin: 0 20px;
 }
 .loading-container .dot {
   width: 10px;

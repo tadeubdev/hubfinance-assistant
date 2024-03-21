@@ -14,10 +14,7 @@ const buttons = ref(message && message.value.buttons);
 const disableButtons = ref(false);
 
 const handleOnButtonClick = (button) => {
-  console.log('Button clicked:', button);
-  // disableButtons.value = true;
   button.action && button.action();
-  button.active = true;
 };
 </script>
 
