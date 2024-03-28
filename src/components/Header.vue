@@ -24,7 +24,7 @@ header {
   padding: 1rem;
   font-size: 1.1rem;
   color: var(--primary-color);
-  font-weight: 100;
+  font-weight: 300;
   display: flex;
   align-items: center;
   gap: 0.8rem;

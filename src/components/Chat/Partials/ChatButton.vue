@@ -50,6 +50,10 @@ const button = ref(props.button);
   align-items: center;
 }
 
+.chat-button p {
+  margin: 0;
+}
+
 .chat-button--disabled:not(.active) {
   background-color: var(--primary-color-light);
   border-color: var(--primary-color-light);

@@ -51,3 +51,9 @@ filesToCopy.forEach((file) => {
   }
   fs.copyFileSync(file, `../system/public/chat/${finalFile}`);
 });
+
+// open dist/index.html and replace href="/ and src="/ with href="/chat/ and src="/chat/
+let indexHtml = fs.readFileSync("dist/index.html", "utf8");
+indexHtml = indexHtml.replace(/href="\//g, 'href="/chat/');
+indexHtml = indexHtml.replace(/src="\//g, 'src="/chat/');
+fs.writeFileSync("../system/public/chat/index.html", indexHtml);

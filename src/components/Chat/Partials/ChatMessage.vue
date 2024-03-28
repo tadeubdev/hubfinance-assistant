@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import ChatButton from './ChatButton.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
   message: {
@@ -10,11 +11,20 @@ const props = defineProps({
 });
 
 const message = ref(props.message);
-const buttons = ref(message && message.value.buttons);
+const buttons = ref(message.value.buttons || []);
 const disableButtons = ref(false);
+// { id, value, action }
+const input = ref(message.value.input || '');
 
 const handleOnButtonClick = (button) => {
   button.action && button.action();
+};
+
+const handleOnKeyUp = (value) => {
+  if (!value.trim() || !input.value.action) {
+    return;
+  }
+  input.value.action(value.trim());
 };
 </script>
 
@@ -26,10 +36,8 @@ const handleOnButtonClick = (button) => {
     <div class="message-author">
       {{ message.author.name }}
     </div>
-    <div class="message-conteudo">
-      {{ message.message }}
-    </div>
-    <div class="message-buttons" v-if="buttons">
+    <div class="message-conteudo" v-html="message.message"></div>
+    <div class="message-buttons" v-if="buttons && buttons.length">
       <chat-button
         v-for="(button, btnIndex) in buttons"
         :key="`${message.uuid}-btn-${btnIndex}`"
@@ -37,6 +45,26 @@ const handleOnButtonClick = (button) => {
         :disabled="disableButtons"
         @button-click="handleOnButtonClick(button)"
       />
+    </div>
+    <div class="message-input" :class="{ 'text-uppercase': input.id === 'input-pesquisar-acao' }" v-if="input">
+      <font-awesome-icon
+        :icon="input.icon"
+        v-if="input.icon"
+      />
+      <input
+        v-model="input.value"
+        :type="input.type || 'text'"
+        class="message-input-field"
+        :placeholder="input.placeholder || 'Digite algo...'"
+        @keyup.enter="handleOnKeyUp($event.target.value)"
+      />
+      <button
+        class="message-button-send"
+        @click="handleOnKeyUp(input.value)"
+        :disabled="!input.value.trim()"
+      >
+        Enter
+      </button>
     </div>
   </div>
 </template>
@@ -90,6 +118,51 @@ const handleOnButtonClick = (button) => {
   color: var(--background-color);
   cursor: not-allowed;
   pointer-events: none;
+}
+.message-input {
+  width: 350px;
+  margin: 20px 0;
+  padding: 9px 10px;
+  color: #ffffff;
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.message-input-field::placeholder {
+  color: rgba(255,255,255,.6);
+}
+.message-input-field {
+  width: 100%;
+  border: none;
+  background: none;
+  font-size: 1.0rem;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #FFFFFF;
+  padding: 0 10px;
+  outline: none;
+}
+.message-input svg {
+  margin: 0 5px 0 13px;
+  color: var(--primary-color);
+}
+.message-button-send {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.text-uppercase {
+  text-transform: uppercase;
 }
 
 @keyframes slide-up {
