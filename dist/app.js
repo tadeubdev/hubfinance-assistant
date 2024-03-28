@@ -1,5 +1,5 @@
 try {
-  let files = "{\"css\":[\"https://ip.hubfinanceiro.com/chat/assets/index-CUpklVzS.css\"],\"js\":[\"https://ip.hubfinanceiro.com/chat/assets/index-B4_fZRM6.js\"]}";
+  let files = "{\"css\":[\"https://ip.hubfinanceiro.com/chat/assets/index-mcuRhFx3.css\"],\"js\":[\"https://ip.hubfinanceiro.com/chat/assets/index-D5bsCoqt.js\"]}";
   files = files? JSON.parse(files): null;
   if (!files) throw new Error("No template data found");
 

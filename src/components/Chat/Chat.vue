@@ -191,7 +191,35 @@ const handleBotoesIniciais = async (title=null) => {
                     setTimeout(() => {
                       pushMessage('Ok! Vou simular 100 mil reais aplicados em cada título e comparar o resultado no vencimento...', 1500);
                       setTimeout(() => {
-                        pushMessage('Aqui estão os resultados da simulação...', 1500);
+                        api.post('api/bot/simulacao').then(({ data }) => {
+                          pushMessage('Aqui estão os resultados da simulação...', 1500);
+                          for (let line in data.results) {
+                            pushMessage(`${data.results[line]}`, 50);
+                          }
+                          const buttons = [
+                            {
+                              text: 'Gostaria que um especialista me apresentasse esses produtos',
+                              type: 'button',
+                              action: () => {
+                                handleMandaMenuEspecialista('Menu Renda Fixa');
+                              }
+                            },
+                            {
+                              text: 'Voltar ao menu',
+                              type: 'button',
+                              action: () => {
+                                pushMessage('Voltar ao menu', 0, null, true);
+                                setTimeout(() => {
+                                  handleBotoesIniciais('Em que posso te ajudar?');
+                                }, 1500);
+                              }
+                            }
+                          ];
+                          pushMessage('O que você gostaria de fazer?', 1000, buttons);
+                        }).catch(error => {
+                          pushMessage('Ocorreu um erro ao realizar a simulação. 😔', 100);
+                          pushMessage('Por favor, tente novamente mais tarde.', 100);
+                        });
                       }, 1500);
                     }, 1500);
                   }
