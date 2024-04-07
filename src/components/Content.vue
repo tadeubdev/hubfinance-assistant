@@ -6,7 +6,7 @@ import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
 import avatarImage from '@/assets/avatar.png'
-import faviconImage from '@/assets/favicon.ico';
+import faviconImage from '@/assets/favicon.png';
 
 import ChatMessage from './Partials/ChatMessage.vue';
 
@@ -595,7 +595,7 @@ onMounted(async () => {
 #container {
   width: 700px;
   margin: 1rem auto 0 auto;
-  max-height: calc(100vh - 180px);
+  max-height: calc(100vh - 200px);
 }
 
 @media screen and (max-width: 800px) {
