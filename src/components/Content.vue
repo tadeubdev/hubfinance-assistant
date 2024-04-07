@@ -5,7 +5,8 @@ import {onMounted, ref} from 'vue';
 import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
-import { faEnvelope, faMagnifyingGlass, faPhone, faUser } from '@fortawesome/free-solid-svg-icons'
+import avatarImage from '@/assets/avatar.png'
+import faviconImage from '@/assets/favicon.ico';
 
 import ChatMessage from './Partials/ChatMessage.vue';
 
@@ -93,10 +94,10 @@ setInterval(watchMessagesQueue, 500);
 const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null) => {
   const author = fromMe ? {
     name: 'Você',
-    image: '/avatar.png'
+    image: avatarImage
   } : {
     name: 'Assistente',
-    image: '/favicon.ico'
+    image: faviconImage
   };
   const uuid = uuidv4();
   const newMessage = { uuid, author, time, fromMe, message, buttons, input };
