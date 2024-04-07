@@ -6,7 +6,7 @@ import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
 import avatarImage from '@/assets/avatar.png'
-import faviconImage from '@/assets/favicon.png';
+import faviconImage from '@/assets/icon.png';
 
 import ChatMessage from './Partials/ChatMessage.vue';
 
