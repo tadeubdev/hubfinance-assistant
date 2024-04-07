@@ -49,6 +49,14 @@ const button = ref(props.button);
   align-items: center;
 }
 
+@media screen and (max-width: 800px) {
+  .chat-button {
+    text-wrap: wrap;
+    white-space: normal;
+    text-align: left;
+  }
+}
+
 .chat-button p {
   margin: 0;
 }
