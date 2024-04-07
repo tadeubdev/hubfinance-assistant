@@ -1,22 +1,30 @@
 <script setup>
-import Header from './components/Header.vue';
-import ChatComponent from './components/Chat/Chat.vue';
+import Header from './components/Header.vue'
+import Content from './components/Content.vue'
+import Footer from './components/Footer.vue'
+import { useStore } from 'vuex';
+
+const store = useStore('store');
+
+const onSendContent = (content) => {
+  store.dispatch('sendMessage', content);
+}
 </script>
 
 <template>
   <main id="main-app">
     <Header></Header>
-    <ChatComponent></ChatComponent>
+    <Content></Content>
+    <Footer
+      :send-content="onSendContent"
+    ></Footer>
   </main>
 </template>
 
 <style scoped>
 #main-app {
-  width: 100%;
-  height: 600px;
-  border: 1px solid var(--primary-color);
-  border-radius: 6px;
+  height: 100vh;
   display: grid;
-  grid-template-rows: 60px 1fr;
+  grid-template-rows: 50px 1fr auto;
 }
 </style>

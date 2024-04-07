@@ -37,23 +37,23 @@ const appFileContent = appFile.replace("/** TEMPLATE DATA **/", content);
 fs.writeFileSync("dist/app.js", appFileContent);
 
 // copy directory and all files from ./dist to ../system/public/chat
-if (fs.existsSync("../system/public/chat")) {
-  fs.rmSync("../system/public/chat", { recursive: true });
+if (fs.existsSync("../system/public/assistant")) {
+  fs.rmSync("../system/public/assistant", { recursive: true });
 }
-fs.mkdirSync("../system/public/chat/assets", { recursive: true, mode: 0o755 });
+fs.mkdirSync("../system/public/assistant/assets", { recursive: true, mode: 0o755 });
 
 const filesToCopy = getAllFilesInsideDir("dist");
 filesToCopy.forEach((file) => {
   const finalFile = file.replace(/^dist\//, '');
   if (fs.lstatSync(file).isDirectory()) {
-    fs.mkdirSync(`../system/public/chat/${finalFile}`, { recursive: true, mode: 0o755 });
+    fs.mkdirSync(`../system/public/assistant/${finalFile}`, { recursive: true, mode: 0o755 });
     return;
   }
-  fs.copyFileSync(file, `../system/public/chat/${finalFile}`);
+  fs.copyFileSync(file, `../system/public/assistant/${finalFile}`);
 });
 
-// open dist/index.html and replace href="/ and src="/ with href="/chat/ and src="/chat/
+// open dist/index.html and replace href="/ and src="/ with href="/assistant/ and src="/assistant/
 let indexHtml = fs.readFileSync("dist/index.html", "utf8");
-indexHtml = indexHtml.replace(/href="\//g, 'href="/chat/');
-indexHtml = indexHtml.replace(/src="\//g, 'src="/chat/');
-fs.writeFileSync("../system/public/chat/index.html", indexHtml);
+indexHtml = indexHtml.replace(/href="\//g, 'href="/assistant/');
+indexHtml = indexHtml.replace(/src="\//g, 'src="/assistant/');
+fs.writeFileSync("../system/public/assistant/index.html", indexHtml);

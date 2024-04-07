@@ -2,5 +2,8 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import store from './store'
 
-createApp(App).mount('#hubfinanceiro-bot')
+createApp(App)
+  .use(store)
+  .mount('#hubfinanceiro-bot');

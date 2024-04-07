@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import ChatButton from './ChatButton.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import ChatButton from './ChatButton.vue';
 
 const props = defineProps({
   message: {
@@ -33,62 +33,77 @@ const handleOnKeyUp = (value) => {
     class="message"
     :class="{ 'message--from-me': message.fromMe }"
   >
-    <div class="message-author">
-      {{ message.author.name }}
-    </div>
-    <div class="message-conteudo" v-html="message.message"></div>
-    <div class="message-buttons" v-if="buttons && buttons.length">
-      <chat-button
-        v-for="(button, btnIndex) in buttons"
-        :key="`${message.uuid}-btn-${btnIndex}`"
-        :button="button"
-        :disabled="disableButtons"
-        @button-click="handleOnButtonClick(button)"
-      />
-    </div>
-    <div class="message-input" :class="{ 'text-uppercase': input.id === 'input-pesquisar-acao' }" v-if="input">
-      <font-awesome-icon
-        :icon="input.icon"
-        v-if="input.icon"
-      />
-      <input
-        v-model="input.value"
-        :type="input.type || 'text'"
-        class="message-input-field"
-        :placeholder="input.placeholder || 'Digite algo...'"
-        @keyup.enter="handleOnKeyUp($event.target.value)"
-      />
-      <button
-        class="message-button-send"
-        @click="handleOnKeyUp(input.value)"
-        :disabled="!input.value.trim()"
-      >
-        Enter
-      </button>
+    <img
+      :src="message.author.image"
+      :alt="message.author.name"
+      class="message-author-image"
+    />
+    <div class="message-right">
+      <div class="message-author">
+        {{ message.author.name }}
+      </div>
+      <div class="message-conteudo" v-html="message.message"></div>
+      <div class="message-buttons" v-if="buttons && buttons.length">
+        <chat-button
+          v-for="(button, btnIndex) in buttons"
+          :key="`${message.uuid}-btn-${btnIndex}`"
+          :button="button"
+          :disabled="disableButtons"
+          @button-click="handleOnButtonClick(button)"
+        />
+      </div>
+      <div class="message-input" :class="{ 'text-uppercase': input.id === 'input-pesquisar-acao' }" v-if="input">
+        <font-awesome-icon
+          :icon="input.icon"
+          v-if="input.icon"
+        />
+        <input
+          v-model="input.value"
+          :type="input.type || 'text'"
+          class="message-input-field"
+          :placeholder="input.placeholder || 'Digite algo...'"
+          @keyup.enter="handleOnKeyUp($event.target.value)"
+        />
+        <button
+          class="message-button-send"
+          @click="handleOnKeyUp(input.value)"
+          :disabled="!input.value.trim()"
+        >
+          Enter
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .message {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  animation: slide-up 0.5s ease;
+}
+.message-author-image {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+.message-right {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  margin: 10px 10px 10px 0;
-  animation: slide-up 0.5s ease;
 }
-.message--from-me {
-  align-items: flex-end;
-  justify-content: flex-end;
+.message-author {
+  font-weight: 600;
 }
 .message-conteudo {
   color: var(--background-color);
-  border: 1px solid var(--primary-color);
-  border-radius: 6px;
-  padding: 10px;
   min-width: 40%;
-  max-width: 80%;
   word-wrap: break-word;
   align-self: flex-start;
   justify-self: flex-start;
@@ -96,13 +111,6 @@ const handleOnKeyUp = (value) => {
   text-align: left;
   font-size: 1.0rem;
   line-height: 1.5;
-  border-bottom-left-radius: 0;
-}
-.message--from-me .message-conteudo {
-  align-self: flex-end;
-  justify-self: flex-end;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 0;
 }
 .message-buttons {
   display: flex;

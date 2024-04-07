@@ -1,5 +1,5 @@
 {
-  "name": "app-hubfinance",
+  "name": "chat-hubfinance",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,8 @@
     "@fortawesome/vue-fontawesome": "^3.0.6",
     "axios": "^1.6.8",
     "uuid": "^9.0.1",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

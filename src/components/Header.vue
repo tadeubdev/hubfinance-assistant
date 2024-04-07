@@ -1,32 +1,42 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faRobot } from '@fortawesome/free-solid-svg-icons'
+import { faMessage } from '@fortawesome/free-solid-svg-icons';
 </script>
 
 <template>
-  <header>
-    <h1 id="header-title">
-      <FontAwesomeIcon :icon="faRobot" />
-      Assistente I.A.
+  <header id="header">
+    <button
+      id="menu-button"
+    >
+      <font-awesome-icon :icon="faMessage" />
+    </button>
+    <h1>
+      Hub Financeiro <span>Chat</span>
     </h1>
   </header>
 </template>
 
 <style scoped>
-header {
+#header {
+  padding: 0 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--primary-color);
+  user-select: none;
 }
-#header-title {
-  margin: 0;
-  padding: 1rem;
-  font-size: 1.1rem;
+#header button {
+  background: none;
+  border: none;
+  cursor: pointer;
   color: var(--primary-color);
-  font-weight: 300;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
+  margin-right: 10px;
+}
+#header h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+#header h1 span {
+  color: #999;
+  font-weight: 100;
 }
 </style>

@@ -30,7 +30,6 @@ const button = ref(props.button);
       v-if="button.image"
       :src="button.image"
       :alt="button.text"
-      style="width: 20px; height: 20px; margin-right: 10px;"
     />
     <p v-html="button.text"></p>
   </button>
@@ -39,9 +38,9 @@ const button = ref(props.button);
 <style scoped>
 .chat-button {
   padding: 10px;
-  border: 1px solid var(--primary-color);
+  border: 2px solid rgba(255,255,255,.2);
   border-radius: 6px;
-  background-color: var(--primary-color);
+  background-color: transparent;
   color: var(--background-color);
   font-size: 1.0rem;
   cursor: pointer;
@@ -52,6 +51,14 @@ const button = ref(props.button);
 
 .chat-button p {
   margin: 0;
+}
+
+.chat-button img {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 3px;
+  object-fit: cover;
 }
 
 .chat-button--disabled:not(.active) {
