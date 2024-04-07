@@ -6,7 +6,6 @@ import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
 import avatarImage from '@/assets/avatar.png'
-import faviconImage from '@/assets/icon.png';
 
 import ChatMessage from './Partials/ChatMessage.vue';
 
@@ -97,7 +96,7 @@ const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null) =>
     image: avatarImage
   } : {
     name: 'Assistente',
-    image: faviconImage
+    image: avatarImage
   };
   const uuid = uuidv4();
   const newMessage = { uuid, author, time, fromMe, message, buttons, input };
