@@ -1,17 +1,13 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faMessage } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 </script>
 
 <template>
   <header id="header">
-    <button
-      id="menu-button"
-    >
-      <font-awesome-icon :icon="faMessage" />
-    </button>
     <h1>
-      Hub Financeiro <span>Chat</span>
+      FLM
+      <span>v0.2</span>
     </h1>
   </header>
 </template>
@@ -38,5 +34,7 @@ import { faMessage } from '@fortawesome/free-solid-svg-icons';
 #header h1 span {
   color: #999;
   font-weight: 100;
+  font-size: 1.1rem;
+  padding-right: 5px;
 }
 </style>
