@@ -19,7 +19,7 @@ viteApiUrl = viteApiUrl? viteApiUrl.split("=")[1]: "";
 if (!viteApiUrl) {
   throw new Error("VITE_API_URL not found in .env.production");
 }
-const URL_BASE = viteApiUrl.replace(/"/g, "").trim() + "/chat/assets";
+const URL_BASE = viteApiUrl.replace(/"/g, "").trim() + "/assistant/assets";
 
 const assetFiles = fs.readdirSync("dist/assets");
 const cssFiles = assetFiles.filter((file) => file.endsWith(".css")).map((file) => `${URL_BASE}/${file}`);
@@ -36,7 +36,7 @@ const appFile = fs.readFileSync("public/app.js", "utf8");
 const appFileContent = appFile.replace("/** TEMPLATE DATA **/", content);
 fs.writeFileSync("dist/app.js", appFileContent);
 
-// copy directory and all files from ./dist to ../system/public/chat
+// copy directory and all files from ./dist to ../system/public/assistant
 if (fs.existsSync("../system/public/assistant")) {
   fs.rmSync("../system/public/assistant", { recursive: true });
 }

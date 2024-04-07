@@ -113,14 +113,30 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
       respostas.forEach(resposta => pushMessage(resposta, 500));
       pushMessage('Estas são as informações que tenho sobre a ação. 😊 Caso queira:', 500, [
         {
-          text: 'Gostaria que um especialista me ajudasse com este ativo',
+          text: 'O que analistas pensam disso?',
           type: 'button',
           action: () => {
-            handleMandaMenuEspecialista('Menu Ativos', 'Gostaria que um especialista me ajudasse com este ativo');
+            handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especilista sobre essa empresa');
           }
         },
+        {
+          text: 'Quero pesquisar por outra ação...',
+          type: 'button',
+          action: () => {
+            handleMandarInputDePesquisarAcao();
+          }
+        },
+        {
+          text: 'Voltar ao menu',
+          type: 'button',
+          action: () => {
+            pushMessage('Voltar ao menu', 0, null, true);
+            setTimeout(() => {
+              handleBotoesIniciais('Em que posso te ajudar?');
+            }, 500);
+          }
+        }
       ]);
-      await handleMandarEscolherEmpresa('Espero ter ajudado! 😊 Caso precise ainda pode escolher outra ação:');
     })
     .catch(error => {
       console.log(error);
@@ -222,7 +238,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
   pushMessage(`Telefone: ${telefone}`, 0, null, true);
 
   api.put('api/bot/contatos', dadosContato).then(() => {
-    pushMessage('Ótimo! Seus dados foram enviados com sucesso. Em breve entraremos em contato.', 1000);
+    pushMessage('Ótimo! Seus dados foram enviados com sucesso. Em breve um especilista irá entrar em contato para lhe ajudar.', 1000);
     pushMessage('Caso precise de mais alguma coisa, estou por aqui.', 1000, [
       {
         text: 'Gostaria de analisar Ações',
@@ -385,10 +401,10 @@ const handleBotoesIniciais = async (title=null) => {
       }
     },
     {
-      text: 'Gostaria de um suporte especializado',
+      text: 'Eu não entendo nada sobre investimentos e gostaria de aprender a investir!',
       type: 'button',
       action: () => {
-        handleMandaMenuEspecialista('Menu Suporte', 'Gostaria de um suporte especializado');
+        handleMandaMenuEspecialista('Menu Suporte', 'Eu não entendo nada sobre investimentos e gostaria de aprender a investir!');
       }
     },
   ]);
