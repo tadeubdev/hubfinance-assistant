@@ -600,6 +600,7 @@ onMounted(async () => {
 @media screen and (max-width: 800px) {
   #container {
     width: 95%;
+    height: calc(100vh - 225px);
   }
 }
 
@@ -615,5 +616,11 @@ onMounted(async () => {
   height: 100%;
   overflow: auto;
   padding: 0 20px;
+}
+
+@media screen and (max-width: 430px) {
+  #content {
+    padding: 0 10px;
+  }
 }
 </style>

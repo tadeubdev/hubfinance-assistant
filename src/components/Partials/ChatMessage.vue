@@ -40,7 +40,7 @@ const handleOnKeyUp = (value) => {
     />
     <div class="message-right">
       <div class="message-author">
-        {{ message.author.name }}
+        <span>{{ message.author.name }}</span>
       </div>
       <div class="message-conteudo" v-html="message.message"></div>
       <div class="message-buttons" v-if="buttons && buttons.length">
@@ -84,6 +84,14 @@ const handleOnKeyUp = (value) => {
   gap: 10px;
   margin-bottom: 20px;
   animation: slide-up 0.5s ease;
+}
+@media screen and (max-width: 430px) {
+  .message {
+    grid-template-columns: 1fr;
+  }
+  .message img {
+    display: none;
+  }
 }
 .message-author-image {
   width: 30px;
