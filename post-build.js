@@ -42,14 +42,6 @@ if (fs.existsSync("../system/public/assistant")) {
 }
 fs.mkdirSync("../system/public/assistant/assets", { recursive: true, mode: 0o755 });
 
-// get js file inside dist/assets and replace the /assets/ with viteApiUrl/assets/
-const jsFilesToReplace = fs.readdirSync("dist/assets").filter((file) => file.endsWith(".js"));
-jsFilesToReplace.forEach((file) => {
-  let jsFile = fs.readFileSync(`dist/assets/${file}`, "utf8");
-  jsFile = jsFile.replace(/\/assets\//g, `${URL_BASE}/`);
-  fs.writeFileSync(`dist/assets/${file}`, jsFile);
-});
-
 const filesToCopy = getAllFilesInsideDir("dist");
 filesToCopy.forEach((file) => {
   const finalFile = file.replace(/^dist\//, '');

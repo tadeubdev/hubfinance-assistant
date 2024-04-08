@@ -5,8 +5,6 @@ import {onMounted, ref} from 'vue';
 import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
-import avatarImage from '@/assets/avatar.png'
-import iconImage from '@/assets/icon.png';
 
 import ChatMessage from './Partials/ChatMessage.vue';
 
@@ -94,10 +92,10 @@ setInterval(watchMessagesQueue, 500);
 const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null) => {
   const author = fromMe ? {
     name: 'Você',
-    image: avatarImage
+    image: 'https://ip.hubfinanceiro.com/assistant/avatar.png'
   } : {
     name: 'FariaLima AI',
-    image: iconImage
+    image: 'https://ip.hubfinanceiro.com/assistant/icon.png'
   };
   const uuid = uuidv4();
   const newMessage = { uuid, author, time, fromMe, message, buttons, input };
@@ -114,10 +112,10 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
       respostas.forEach(resposta => pushMessage(resposta, 500));
       pushMessage('Estas são as informações que tenho sobre a ação. 😊 Caso queira:', 500, [
         {
-          text: 'O que os analistas pensam disso?',
+          text: 'Gostaria de conversar com um especialista sobre esta empresa!',
           type: 'button',
           action: () => {
-            handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especialista sobre esta empresa');
+            handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especialista sobre esta empresa!');
           }
         },
         {
