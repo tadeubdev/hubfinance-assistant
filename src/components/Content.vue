@@ -6,6 +6,7 @@ import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
 import avatarImage from '@/assets/avatar.png'
+import iconImage from '@/assets/icon.png';
 
 import ChatMessage from './Partials/ChatMessage.vue';
 
@@ -95,8 +96,8 @@ const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null) =>
     name: 'Você',
     image: avatarImage
   } : {
-    name: 'Assistente',
-    image: avatarImage
+    name: 'FariaLima AI',
+    image: iconImage
   };
   const uuid = uuidv4();
   const newMessage = { uuid, author, time, fromMe, message, buttons, input };
@@ -113,10 +114,10 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
       respostas.forEach(resposta => pushMessage(resposta, 500));
       pushMessage('Estas são as informações que tenho sobre a ação. 😊 Caso queira:', 500, [
         {
-          text: 'O que analistas pensam disso?',
+          text: 'O que os analistas pensam disso?',
           type: 'button',
           action: () => {
-            handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especilista sobre essa empresa');
+            handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especialista sobre esta empresa');
           }
         },
         {
@@ -536,7 +537,6 @@ const handleMandarEscolherEmpresa = async (title=null) => {
       action: async () => {
         pushMessage(`Me dê informações sobre a ação ${empresa.name}`, 0, null, true);
         await sleepTime(500);
-        pushMessage(`Ótimo! Vou buscar as informações sobre a ação ${empresa.name} para você...`, 500);
         await api.post(`api/bot/acoes/${empresa.id}`)
           .then(({ data }) => {
             const buttons = (data.perguntas || []).map(pergunta => {
@@ -546,9 +546,54 @@ const handleMandarEscolherEmpresa = async (title=null) => {
                 action: () => handleClickOnPergunta(empresa.id, pergunta)
               };
             });
-            pushMessage(`Ok! Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 2000, buttons);
+            pushMessage(`Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 2000, buttons);
           })
-          .catch(error => console.log(error));
+          .catch(error => {
+            const statusCode = error.response.status || 500;
+            if (statusCode === 404) {
+              pushMessage('Não encontrei nenhuma informação sobre a ação. 😔', 100);
+              pushMessage('Por favor, tente novamente mais tarde. Ou pesquise por outra ação.', 100, [
+                {
+                  text: 'Quero pesquisar por outra ação...',
+                  type: 'button',
+                  action: () => {
+                    handleMandarInputDePesquisarAcao();
+                  }
+                },
+                {
+                  text: 'Voltar ao menu',
+                  type: 'button',
+                  action: () => {
+                    pushMessage('Voltar ao menu', 0, null, true);
+                    setTimeout(() => {
+                      handleBotoesIniciais('Em que posso te ajudar?');
+                    }, 500);
+                  }
+                }
+              ]);
+              return;
+            }
+            pushMessage('Ocorreu um erro ao buscar informações sobre a ação. 😔', 100)
+            pushMessage('Por favor, tente novamente mais tarde. Ou pesquise por outra ação.', 100, [
+              {
+                text: 'Quero pesquisar por outra ação...',
+                type: 'button',
+                action: () => {
+                  handleMandarInputDePesquisarAcao();
+                }
+              },
+              {
+                text: 'Voltar ao menu',
+                type: 'button',
+                action: () => {
+                  pushMessage('Voltar ao menu', 0, null, true);
+                  setTimeout(() => {
+                    handleBotoesIniciais('Em que posso te ajudar?');
+                  }, 500);
+                }
+              }
+            ]);
+          });
       }
     };
   });
@@ -600,7 +645,7 @@ onMounted(async () => {
 @media screen and (max-width: 800px) {
   #container {
     width: 95%;
-    height: calc(100vh - 225px);
+    height: calc(100vh - 245px);
   }
 }
 
