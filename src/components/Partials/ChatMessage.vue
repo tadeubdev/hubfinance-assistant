@@ -2,6 +2,9 @@
 import { ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import ChatButton from './ChatButton.vue';
+import AnaliseTecnica from './AnaliseTecnica.vue';
+import TradingView from './TradingView.vue';
+import StockGuide from './StockGuide.vue';
 
 const props = defineProps({
   message: {
@@ -12,6 +15,9 @@ const props = defineProps({
 
 const message = ref(props.message);
 const buttons = ref(message.value.buttons || []);
+const partial = ref(message.value.partial || null);
+const partialData = ref(message.value.partialData || null);
+
 const disableButtons = ref(false);
 // { id, value, action }
 const input = ref(message.value.input || '');
@@ -42,7 +48,16 @@ const handleOnKeyUp = (value) => {
       <div class="message-author">
         <span>{{ message.author.name }}</span>
       </div>
-      <div class="message-conteudo" v-html="message.message"></div>
+      <div class="message-partial message-analise-tecnica" v-if="partial === 'analise-tecnica'">
+        <analise-tecnica :symbol="partialData" />
+      </div>
+      <div class="message-partial message-analise-tecnica" v-if="partial === 'analise-tecnica'">
+        <trading-view :symbol="partialData" />
+      </div>
+      <div class="message-partial message-stock-guide" v-if="partial === 'stock-guide'">
+        <stock-guide :name="partialData.name" :slug="partialData.slug" />
+      </div>
+      <div class="message-conteudo" v-else v-html="message.message"></div>
       <div class="message-buttons" v-if="buttons && buttons.length">
         <chat-button
           v-for="(button, btnIndex) in buttons"
@@ -179,6 +194,18 @@ const handleOnKeyUp = (value) => {
 }
 .text-uppercase {
   text-transform: uppercase;
+}
+.message-analise-tecnica {
+  width: 100%;
+  max-width: 600px;
+  height: 460px;
+  margin: 20px 0;
+}
+.message-stock-guide {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  margin: 20px 0;
 }
 
 @keyframes slide-up {

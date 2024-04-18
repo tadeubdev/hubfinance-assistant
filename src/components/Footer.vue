@@ -59,7 +59,7 @@ const onContentInput = (event) => {
       >
         <input 
           type="text" 
-          placeholder="Hub Financeiro Chat"
+          placeholder="Faria Lima AI Chat"
           v-model="content"
           :disabled="!inputAllowed"
           @focus="onContentFocus"

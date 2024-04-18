@@ -5,7 +5,7 @@ import {onMounted, ref} from 'vue';
 import { useStore } from 'vuex';
 import api from '@/infra/axios';
 import sleepTime from '@/helpers/sleep-time';
-
+import { faHome, faRepeat, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import ChatMessage from './Partials/ChatMessage.vue';
 
 const messages = ref([]);
@@ -89,7 +89,7 @@ const watchMessagesQueue = () => {
 
 setInterval(watchMessagesQueue, 500);
 
-const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null) => {
+const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null, partial=null, partialData=null) => {
   const author = fromMe ? {
     name: 'Você',
     image: 'https://ip.hubfinanceiro.com/assistant/avatar.png'
@@ -98,11 +98,11 @@ const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null) =>
     image: 'https://ip.hubfinanceiro.com/assistant/icon.png'
   };
   const uuid = uuidv4();
-  const newMessage = { uuid, author, time, fromMe, message, buttons, input };
+  const newMessage = { uuid, author, time, fromMe, message, buttons, input, partial, partialData };
   messagesQueue.value.push(newMessage);
 };
 
-const handleClickOnPergunta = async (empresaId, pergunta) => {
+const handleClickOnPergunta = async (empresaId, pergunta, outrasPerguntas=[]) => {
   pushMessage(pergunta.pergunta, 0, null, true);
   await sleepTime(1000);
 
@@ -110,10 +110,57 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
     .then(async ({ data }) => {
       const respostas = data.respostas || [];
       respostas.forEach(resposta => pushMessage(resposta, 500));
-      pushMessage('Estas são as informações que tenho sobre a ação. 😊 Caso queira:', 500, [
+
+      pushMessage('', 1500, [], false, null, 'stock-guide', {
+        name: data.empresa.name || '',
+        slug: data.empresa.slug || 's'
+      });
+
+      if (!outrasPerguntas || !outrasPerguntas.length) {
+        pushMessage('Estas são as informações que tenho sobre a ação. 😊', 500, [
+          {
+            text: '🙋‍♂️ Gostaria de conversar com um especialista sobre esta empresa!',
+            type: 'button',
+            contrast: true,
+            action: () => {
+              handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especialista sobre esta empresa!');
+            }
+          },
+          {
+            text: 'Quero pesquisar por outra ação...',
+            type: 'button',
+            icon: faMagnifyingGlass,
+            action: () => {
+              handleMandarInputDePesquisarAcao();
+            }
+          },
+          {
+            text: 'Voltar ao menu',
+            icon: faHome,
+            type: 'button',
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+        return;
+      }
+      pushMessage('Estas são as informações que tenho sobre a ação. 😊 Você gostaria de fazer outra pergunta?', 500, outrasPerguntas.map(pergunta => {
+        return {
+          text: pergunta.pergunta,
+          type: 'pergunta',
+          action: () => handleClickOnPergunta(empresaId, pergunta, outrasPerguntas.filter(p => p.id !== pergunta.id))
+        };
+      }));
+      await sleepTime(3000);
+      pushMessage('Você também pode...', 500, [
         {
-          text: 'Gostaria de conversar com um especialista sobre esta empresa!',
+          text: '🙋‍♂️ Gostaria de conversar com um especialista sobre esta empresa!',
           type: 'button',
+          contrast: true,
           action: () => {
             handleMandaMenuEspecialista('Menu Ativos', 'Gostaria de conversar com um especialista sobre esta empresa!');
           }
@@ -121,12 +168,14 @@ const handleClickOnPergunta = async (empresaId, pergunta) => {
         {
           text: 'Quero pesquisar por outra ação...',
           type: 'button',
+          icon: faMagnifyingGlass,
           action: () => {
             handleMandarInputDePesquisarAcao();
           }
         },
         {
           text: 'Voltar ao menu',
+          icon: faHome,
           type: 'button',
           action: () => {
             pushMessage('Voltar ao menu', 0, null, true);
@@ -160,6 +209,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Tentar novamente',
         type: 'button',
+        icon: faRepeat,
         action: () => {
           handleMandaMenuEspecialista(assunto, title);
         }
@@ -167,6 +217,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Voltar ao menu',
         type: 'button',
+        icon: faHome,
         action: () => {
           pushMessage('Voltar ao menu', 0, null, true);
           setTimeout(() => {
@@ -188,6 +239,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Tentar novamente',
         type: 'button',
+        icon: faRepeat,
         action: () => {
           handleMandaMenuEspecialista(assunto, title);
         }
@@ -195,6 +247,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Voltar ao menu',
         type: 'button',
+        icon: faHome,
         action: () => {
           pushMessage('Voltar ao menu', 0, null, true);
           setTimeout(() => {
@@ -216,6 +269,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Tentar novamente',
         type: 'button',
+        icon: faRepeat,
         action: () => {
           handleMandaMenuEspecialista(assunto, title);
         }
@@ -223,6 +277,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Voltar ao menu',
         type: 'button',
+        icon: faHome,
         action: () => {
           pushMessage('Voltar ao menu', 0, null, true);
           setTimeout(() => {
@@ -240,17 +295,12 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
     pushMessage('Ótimo! Seus dados foram enviados com sucesso. Em breve um especilista irá entrar em contato para lhe ajudar.', 1000);
     pushMessage('Caso precise de mais alguma coisa, estou por aqui.', 1000, [
       {
-        text: 'Gostaria de analisar Ações',
+        text: '📈 Gostaria de analisar Ações',
         type: 'button',
-        action: () => {
-          pushMessage('Gostaria de analisar Ações', 0, null, true);
-          setTimeout(() => {
-            handleMandarEscolherEmpresa('Escolha abaixo uma das ações para que eu possa te ajudar:');
-          }, 500);
-        }
+        action: () => handleDisplayAnaliseAcoes()
       },
       {
-        text: 'Gostaria de entender o cenário econômico',
+        text: '🌍 Gostaria de entender o cenário econômico',
         type: 'button',
         action: () => {
           pushMessage('Gostaria de entender o cenário econômico', 0, null, true);
@@ -263,6 +313,7 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
       {
         text: 'Voltar ao menu',
         type: 'button',
+        icon: faHome,
         action: () => {
           pushMessage('Voltar ao menu', 0, null, true);
           setTimeout(() => {
@@ -279,10 +330,126 @@ const handleMandaMenuEspecialista = async (assunto=null, title=null) => {
   });
 }
 
+const handlePesquisarPorAnaliseTecnicas = async () => {
+  pushMessage('Análise Técnica', 0, null, true);
+  // add input para pesquisar ação
+  pushMessage('Qual empresa você gostaria de analisar?<br/>Exemplo: PETR4, VALE3, ITUB4, etc.', 800, null, false, null);
+  await sleepTime(1500);
+  waitForInputMessage().then(async (value) => {
+    if (!value || !value.trim()) {
+      return;
+    }
+    value = value.toUpperCase();
+    api.post('api/bot/analise-tecnica/search', { slug: value }).then(({ data }) => {
+      const empresa = data.empresa || null;
+      if (!empresa) {
+        pushMessage('Não encontrei nenhuma ação com o nome informado. 😔', 100)
+        pushMessage('Você pode pesquisar por outro ativo.', 100, [
+          {
+            text: '🔍 Quero pesquisar por outro ativo...',
+            type: 'button',
+            action: () => {
+              handlePesquisarPorAnaliseTecnicas();
+            }
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+        return;
+      }
+      const symbol = `BMFBOVESPA:${empresa.slug}`;
+      pushMessage(`Pesquisando informações sobre a ação ${value}...`, 500);
+      pushMessage('', 1500, [], false, null, 'analise-tecnica', symbol);
+      setTimeout(() => {
+        pushMessage('Aqui estão as informações que encontrei. Você ainda pode:', 500, [
+          {
+            text: '🔍 Quero pesquisar por outro ativo...',
+            type: 'button',
+            action: () => handlePesquisarPorAnaliseTecnicas()
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+      }, 2000)
+    }).catch(() => {
+      pushMessage(`Não encontrei nenhuma informação sobre: ${value}. 😔`, 100);
+      pushMessage('Mas você pode pesquisar por outro ativo.', 100, [
+        {
+          text: 'Quero pesquisar por outro ativo...',
+          type: 'button',
+          action: () => {
+            pushMessage('Quero pesquisar por outro ativo!', 0, null, true);
+            handlePesquisarPorAnaliseTecnicas();
+          }
+        },
+        {
+          text: 'Voltar ao menu',
+          type: 'button',
+          icon: faHome,
+          action: () => {
+            pushMessage('Voltar ao menu', 0, null, true);
+            setTimeout(() => {
+              handleBotoesIniciais('Em que posso te ajudar?');
+            }, 500);
+          }
+        }
+      ]);
+    });
+  });
+}
+
+const handleDisplayAnaliseAcoes = (title=null) => {
+  pushMessage(title || 'Gostaria de analisar Ações', 0, null, true);
+  pushMessage('Ótimo! Que tipo de Ánalise você gostaria de fazer?', 500, [
+    {
+      text: '📊 Análise Fundamentalista',
+      type: 'button',
+      action: () => {
+        pushMessage('Análise Fundamentalista', 0, null, true);
+        handleMandarEscolherEmpresa('Escolha abaixo uma das ações para que eu possa te ajudar:');
+      }
+    },
+    {
+      text: '🔍 Análise Técnica',
+      type: 'button',
+      action: async () => handlePesquisarPorAnaliseTecnicas()
+    },
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+};
+
 const handleBotoesIniciais = async (title=null) => {
   pushMessage(title || 'Em que posso te ajudar?', 1000, [
     {
-      text: 'Gostaria de analisar Renda Fixa',
+      text: '💰 Gostaria de analisar Renda Fixa',
       type: 'button',
       action: async () => {
         pushMessage('Quais são os melhores títulos de renda fixa para se investir?', 0, null, true);
@@ -305,7 +472,7 @@ const handleBotoesIniciais = async (title=null) => {
                           }
                           const buttons = [
                             {
-                              text: 'Gostaria que um especialista me apresentasse esses produtos',
+                              text: '🙋‍♂️ Gostaria que um especialista me apresentasse esses produtos',
                               type: 'button',
                               action: () => {
                                 handleMandaMenuEspecialista('Menu Renda Fixa', 'Gostaria que um especialista me apresentasse esses produtos');
@@ -314,6 +481,7 @@ const handleBotoesIniciais = async (title=null) => {
                             {
                               text: 'Voltar ao menu',
                               type: 'button',
+                              icon: faHome,
                               action: () => {
                                 pushMessage('Voltar ao menu', 0, null, true);
                                 setTimeout(() => {
@@ -332,7 +500,7 @@ const handleBotoesIniciais = async (title=null) => {
                   }
                 },
                 {
-                  text: 'Gostaria que um especialista me apresentasse esses produtos',
+                  text: '🙋‍♂️ Gostaria que um especialista me apresentasse esses produtos',
                   type: 'button',
                   action: () => {
                     handleMandaMenuEspecialista('Menu Renda Fixa', 'Gostaria que um especialista me apresentasse esses produtos');
@@ -341,6 +509,7 @@ const handleBotoesIniciais = async (title=null) => {
                 {
                   text: 'Voltar ao menu',
                   type: 'button',
+                  icon: faHome,
                   action: () => {
                     pushMessage('Voltar ao menu', 0, null, true);
                     setTimeout(() => {
@@ -363,6 +532,7 @@ const handleBotoesIniciais = async (title=null) => {
                   {
                     text: 'Voltar ao menu',
                     type: 'button',
+                    icon: faHome,
                     action: () => {
                       pushMessage('Voltar ao menu', 0, null, true);
                       setTimeout(() => {
@@ -379,17 +549,12 @@ const handleBotoesIniciais = async (title=null) => {
       }
     },
     {
-      text: 'Gostaria de analisar Ações',
+      text: '📈 Gostaria de analisar Ações',
       type: 'button',
-      action: () => {
-        pushMessage('Gostaria de analisar Ações', 0, null, true);
-        setTimeout(() => {
-          handleMandarEscolherEmpresa('Escolha abaixo uma das ações para que eu possa te ajudar:');
-        }, 500);
-      }
+      action: () => handleDisplayAnaliseAcoes()
     },
     {
-      text: 'Gostaria de entender o cenário econômico',
+      text: '🌍 Gostaria de entender o cenário econômico',
       type: 'button',
       action: () => {
         pushMessage('Gostaria de entender o cenário econômico', 0, null, true);
@@ -400,8 +565,9 @@ const handleBotoesIniciais = async (title=null) => {
       }
     },
     {
-      text: 'Eu não entendo nada sobre investimentos e gostaria de aprender a investir!',
+      text: '📚 Eu não entendo nada sobre investimentos e gostaria de aprender a investir!',
       type: 'button',
+      contrast: true,
       action: () => {
         handleMandaMenuEspecialista('Menu Suporte', 'Eu não entendo nada sobre investimentos e gostaria de aprender a investir!');
       }
@@ -419,6 +585,7 @@ const handleEscolherCenarioEconomico = async (title=null) => {
             {
               text: 'Voltar ao menu',
               type: 'button',
+              icon: faHome,
               action: () => {
                 pushMessage('Voltar ao menu', 0, null, true);
                 setTimeout(() => {
@@ -447,7 +614,7 @@ const handleEscolherCenarioEconomico = async (title=null) => {
                   pushMessage('Espero ter ajudado! 😊', 500);
                   pushMessage('Caso precise de mais alguma coisa, estou por aqui.', 500, [
                     {
-                      text: 'Gostaria de entender outro cenário econômico',
+                      text: '🌍 Gostaria de entender outro cenário econômico',
                       type: 'button',
                       action: () => {
                         pushMessage('Gostaria de entender outro cenário econômico', 0, null, true);
@@ -459,6 +626,7 @@ const handleEscolherCenarioEconomico = async (title=null) => {
                     {
                       text: 'Voltar ao menu',
                       type: 'button',
+                      icon: faHome,
                       action: () => {
                         pushMessage('Voltar ao menu', 0, null, true);
                         setTimeout(() => {
@@ -479,11 +647,13 @@ const handleEscolherCenarioEconomico = async (title=null) => {
   }, 500);
 };
 
-const handleMandarInputDePesquisarAcao = async () => {
-  pushMessage('Quero pesquisar por outra ação...', 0, null, true);
+const handleMandarInputDePesquisarAcao = async (title=null, displayFirstTitle=true) => {
+  if (displayFirstTitle) {
+    pushMessage('Quero pesquisar por outra ação...', 0, null, true);
+  }
   setTimeout(async () => {
     // add input para pesquisar ação
-    pushMessage('Digite o nome da ação que deseja pesquisar no campo de texto abaixo.<br/>Exemplo: PETR4, VALE3, ITUB4, etc.', 100, null, false, null);
+    pushMessage(title || 'Digite o nome da ação que deseja pesquisar no campo de texto abaixo.<br/>Exemplo: PETR4, VALE3, ITUB4, etc.', 100, null, false, null);
     await sleepTime(500);
     waitForInputMessage().then(async (value) => {
       if (!value || !value.trim()) {
@@ -497,7 +667,7 @@ const handleMandarInputDePesquisarAcao = async () => {
             return {
               text: pergunta.pergunta,
               type: 'pergunta',
-              action: () => handleClickOnPergunta(empresa.id, pergunta)
+              action: () => handleClickOnPergunta(empresa.id, pergunta, data.perguntas.filter(p => p.id !== pergunta.id))
             };
           });
           pushMessage(`Ok! Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 2000, buttons);
@@ -541,7 +711,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
               return {
                 text: pergunta.pergunta,
                 type: 'pergunta',
-                action: () => handleClickOnPergunta(empresa.id, pergunta)
+                action: () => handleClickOnPergunta(empresa.id, pergunta, data.perguntas.filter(p => p.id !== pergunta.id))
               };
             });
             pushMessage(`Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 2000, buttons);
@@ -553,6 +723,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
               pushMessage('Por favor, tente novamente mais tarde. Ou pesquise por outra ação.', 100, [
                 {
                   text: 'Quero pesquisar por outra ação...',
+                  icon: faMagnifyingGlass,
                   type: 'button',
                   action: () => {
                     handleMandarInputDePesquisarAcao();
@@ -561,6 +732,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
                 {
                   text: 'Voltar ao menu',
                   type: 'button',
+                  icon: faHome,
                   action: () => {
                     pushMessage('Voltar ao menu', 0, null, true);
                     setTimeout(() => {
@@ -576,6 +748,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
               {
                 text: 'Quero pesquisar por outra ação...',
                 type: 'button',
+                icon: faMagnifyingGlass,
                 action: () => {
                   handleMandarInputDePesquisarAcao();
                 }
@@ -583,6 +756,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
               {
                 text: 'Voltar ao menu',
                 type: 'button',
+                icon: faHome,
                 action: () => {
                   pushMessage('Voltar ao menu', 0, null, true);
                   setTimeout(() => {
@@ -598,6 +772,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
   botoesEmpresas.push({
     text: 'Quero pesquisar por outra ação...',
     type: 'button',
+    icon: faMagnifyingGlass,
     action: () => {
       handleMandarInputDePesquisarAcao();
     }
@@ -605,6 +780,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
   botoesEmpresas.push({
     text: 'Voltar ao menu',
     type: 'button',
+    icon: faHome,
     action: () => {
       pushMessage('Voltar ao menu', 0, null, true);
       setTimeout(() => {
