@@ -3,8 +3,18 @@ import { ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import ChatButton from './ChatButton.vue';
 import AnaliseTecnica from './AnaliseTecnica.vue';
+import AnaliseFinanceira from './AnaliseFinanceira.vue';
+import SymbolInfo from './SymbolInfo.vue';
+import StockHeatmap from './StockHeatmap.vue';
+import CryptoCoinsHeatmap from './CryptoCoinsHeatmap.vue';
 import TradingView from './TradingView.vue';
 import StockGuide from './StockGuide.vue';
+import RssMagazine from './RssMagazine.vue';
+import AdvancedChart from './AdvancedChart.vue';
+import CurrencyExchange from './CurrencyExchange.vue';
+import EconomicCalendar from './EconomicCalendar.vue';
+import SymbolProfile from './SymbolProfile.vue';
+import Hotlists from './Hotlists.vue';
 
 const props = defineProps({
   message: {
@@ -35,30 +45,57 @@ const handleOnKeyUp = (value) => {
 </script>
 
 <template>
-  <div
-    class="message"
-    :class="{ 'message--from-me': message.fromMe }"
-  >
+  <div class="assistant-message">
     <img
       :src="message.author.image"
       :alt="message.author.name"
-      class="message-author-image"
+      class="assistant-message-author-image"
     />
-    <div class="message-right">
-      <div class="message-author">
+    <div class="assistant-message-right">
+      <div class="assistant-message-author">
         <span>{{ message.author.name }}</span>
       </div>
-      <div class="message-partial message-analise-tecnica" v-if="partial === 'analise-tecnica'">
+      <div class="assistant-message-partial assistant-message-rss-magazine" v-if="partial === 'rss-magazine'">
+        <rss-magazine />
+      </div>
+      <div class="assistant-message-partial assistant-message-economic-calendar" v-if="partial === 'economic-calendar'">
+        <economic-calendar />
+      </div>
+      <div class="assistant-message-partial assistant-message-hotlists" v-if="partial === 'hotlists'">
+        <hotlists />
+      </div>
+      <div class="assistant-message-partial assistant-message-symbol-profile" v-if="partial === 'symbol-profile'">
+        <symbol-profile :symbol="partialData" />
+      </div>
+      <div class="assistant-message-partial assistant-message-currency-exchange" v-if="partial === 'currency-exchange'">
+        <currency-exchange />
+      </div>
+      <div class="assistant-message-partial assistant-message-advanced-chart" v-if="partial === 'advanced-chart'">
+        <advanced-chart :symbol="partialData" />
+      </div>
+      <div class="assistant-message-partial assistant-message-symbol-info" v-if="partial === 'symbol-info'">
+        <symbol-info :symbol="partialData" />
+      </div>
+      <div class="assistant-message-partial assistant-message-stock-heatmap" v-if="partial === 'stock-heatmap'">
+        <stock-heatmap :symbol="partialData" />
+      </div>
+      <div class="assistant-message-partial assistant-message-crypto-heatmap" v-if="partial === 'crypto-coins-heatmap'">
+        <crypto-coins-heatmap />
+      </div>
+      <div class="assistant-message-partial assistant-message-analise-financeira" v-if="partial === 'analise-financeira'">
+        <analise-financeira :symbol="partialData" />
+      </div>
+      <div class="assistant-message-partial assistant-message-analise-tecnica" v-if="partial === 'analise-tecnica'">
         <analise-tecnica :symbol="partialData" />
       </div>
-      <div class="message-partial message-analise-tecnica" v-if="partial === 'analise-tecnica'">
+      <div class="assistant-message-partial assistant-message-analise-tecnica" v-if="partial === 'analise-tecnica'">
         <trading-view :symbol="partialData" />
       </div>
-      <div class="message-partial message-stock-guide" v-if="partial === 'stock-guide'">
+      <div class="assistant-message-partial assistant-message-stock-guide" v-if="partial === 'stock-guide'">
         <stock-guide :name="partialData.name" :slug="partialData.slug" />
       </div>
-      <div class="message-conteudo" v-else v-html="message.message"></div>
-      <div class="message-buttons" v-if="buttons && buttons.length">
+      <div class="assistant-message-conteudo" v-else v-html="message.message"></div>
+      <div class="assistant-message-buttons" v-if="buttons && buttons.length">
         <chat-button
           v-for="(button, btnIndex) in buttons"
           :key="`${message.uuid}-btn-${btnIndex}`"
@@ -67,7 +104,7 @@ const handleOnKeyUp = (value) => {
           @button-click="handleOnButtonClick(button)"
         />
       </div>
-      <div class="message-input" :class="{ 'text-uppercase': input.id === 'input-pesquisar-acao' }" v-if="input">
+      <div class="assistant-message-input" :class="{ 'assistant-text-uppercase': input.id === 'input-pesquisar-acao' }" v-if="input">
         <font-awesome-icon
           :icon="input.icon"
           v-if="input.icon"
@@ -75,12 +112,12 @@ const handleOnKeyUp = (value) => {
         <input
           v-model="input.value"
           :type="input.type || 'text'"
-          class="message-input-field"
+          class="assistant-message-input-field"
           :placeholder="input.placeholder || 'Digite algo...'"
           @keyup.enter="handleOnKeyUp($event.target.value)"
         />
         <button
-          class="message-button-send"
+          class="assistant-message-button-send"
           @click="handleOnKeyUp(input.value)"
           :disabled="!input.value.trim()"
         >
@@ -91,8 +128,8 @@ const handleOnKeyUp = (value) => {
   </div>
 </template>
 
-<style scoped>
-.message {
+<style>
+.assistant-message {
   display: grid;
   grid-template-columns: 30px 1fr;
   align-items: flex-start;
@@ -101,30 +138,30 @@ const handleOnKeyUp = (value) => {
   animation: slide-up 0.5s ease;
 }
 @media screen and (max-width: 430px) {
-  .message {
+  .assistant-message {
     grid-template-columns: 1fr;
   }
-  .message img {
+  .assistant-message img {
     display: none;
   }
 }
-.message-author-image {
+.assistant-message-author-image {
   width: 30px;
   height: 30px;
   object-fit: cover;
   border-radius: 6px;
   margin-top: 5px;
 }
-.message-right {
+.assistant-message-right {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
 }
-.message-author {
+.assistant-message-author {
   font-weight: 600;
 }
-.message-conteudo {
+.assistant-message-conteudo {
   color: var(--background-color);
   min-width: 40%;
   word-wrap: break-word;
@@ -135,7 +172,7 @@ const handleOnKeyUp = (value) => {
   font-size: 1.0rem;
   line-height: 1.5;
 }
-.message-buttons {
+.assistant-message-buttons {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -144,13 +181,13 @@ const handleOnKeyUp = (value) => {
   gap: 15px;
   flex-wrap: wrap;
 }
-.disabled {
+.assistant-message-buttons .disabled {
   background-color: var(--primary-color);
   color: var(--background-color);
   cursor: not-allowed;
   pointer-events: none;
 }
-.message-input {
+.assistant-message-input {
   width: 350px;
   margin: 20px 0;
   padding: 9px 10px;
@@ -162,10 +199,10 @@ const handleOnKeyUp = (value) => {
   justify-content: flex-start;
   gap: 10px;
 }
-.message-input-field::placeholder {
+.assistant-message-input-field::placeholder {
   color: rgba(255,255,255,.6);
 }
-.message-input-field {
+.assistant-message-input-field {
   width: 100%;
   border: none;
   background: none;
@@ -176,11 +213,11 @@ const handleOnKeyUp = (value) => {
   padding: 0 10px;
   outline: none;
 }
-.message-input svg {
+.assistant-message-input svg {
   margin: 0 5px 0 13px;
   color: var(--primary-color);
 }
-.message-button-send {
+.assistant-message-button-send {
   background-color: var(--primary-color);
   color: var(--background-color);
   border: none;
@@ -192,22 +229,73 @@ const handleOnKeyUp = (value) => {
   cursor: pointer;
   outline: none;
 }
-.text-uppercase {
+.assistant-text-uppercase {
   text-transform: uppercase;
 }
-.message-analise-tecnica {
+.assistant-message-general {
+  width: 100%;
+  max-width: 600px;
+  height: 560px;
+  margin: 20px 0;
+}
+.assistant-message-stock-heatmap {
+  width: 100%;
+  height: 600px;
+  margin: 20px 0;
+}
+.assistant-message-crypto-heatmap {
+  width: 100%;
+  height: 600px;
+  margin: 20px 0;
+}
+.assistant-message-symbol-info {
+  width: 100%;
+  max-width: 100%;
+  height: 160px;
+  margin: 20px 0;
+}
+.assistant-message-analise-tecnica {
   width: 100%;
   max-width: 600px;
   height: 460px;
   margin: 20px 0;
 }
-.message-stock-guide {
+.assistant-message-stock-guide {
   width: 100%;
   max-width: 600px;
   height: 400px;
   margin: 20px 0;
 }
-
+.assistant-message-advanced-chart {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  margin: 20px 0;
+}
+.assistant-message-currency-exchange {
+  width: 555px;
+  max-width: 555px;
+  height: 195px;
+  margin: 20px 0;
+}
+.assistant-message-economic-calendar {
+  width: 650px;
+  max-width: 90%;
+  height: 467px;
+  margin: 20px 0;
+}
+.assistant-message-symbol-profile {
+  width: 100%;
+  max-width: 100%;
+  height: 460px;
+  margin: 20px 0;
+}
+.assistant-message-hotlists {
+  width: 100%;
+  max-width: 100%;
+  height: 550px;
+  margin: 20px 0;
+}
 @keyframes slide-up {
   from {
     transform: translateY(100%);

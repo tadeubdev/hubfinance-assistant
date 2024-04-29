@@ -20,11 +20,11 @@ const button = ref(props.button);
 
 <template>
   <button
-    class="chat-button"
+    class="assistant-chat-button"
     @click="emit('button-click')"
     :disabled="props.disabled"
     :class="{
-      'chat-button--disabled': props.disabled,
+      'assistant-chat-button--disabled': props.disabled,
       'active': props.button.active,
       'contrast': props.button.contrast,
     }"
@@ -44,7 +44,7 @@ const button = ref(props.button);
 </template>
 
 <style scoped>
-.chat-button {
+.assistant-chat-button {
   padding: 10px;
   border: 2px solid var(--primary-color);
   border-radius: 6px;
@@ -55,26 +55,26 @@ const button = ref(props.button);
   transition: background-color 0.3s ease;
   display: flex;
   align-items: center;
+  white-space: wrap;
 }
 
-.chat-button.contrast {
+.assistant-chat-button.contrast {
   border-color: var(--primary-color);
   background-color: #1649ffad;
 }
 
 @media screen and (max-width: 800px) {
-  .chat-button {
-    text-wrap: wrap;
+  .assistant-chat-button {
     white-space: normal;
     text-align: left;
   }
 }
 
-.chat-button p {
+.assistant-chat-button p {
   margin: 0;
 }
 
-.chat-button img {
+.assistant-chat-button img {
   width: 20px;
   height: 20px;
   margin-right: 10px;
@@ -82,12 +82,12 @@ const button = ref(props.button);
   object-fit: cover;
 }
 
-.chat-button--disabled:not(.active) {
+.assistant-chat-button--disabled:not(.active) {
   background-color: var(--primary-color-light);
   border-color: var(--primary-color-light);
 }
 
-.chat-button--disabled {
+.assistant-chat-button--disabled {
   cursor: not-allowed;
 }
 </style>

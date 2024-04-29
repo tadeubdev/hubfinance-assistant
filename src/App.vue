@@ -12,7 +12,7 @@ const onSendContent = (content) => {
 </script>
 
 <template>
-  <main id="main-app">
+  <main id="assistant-main-app">
     <Header></Header>
     <Content></Content>
     <Footer
@@ -22,9 +22,13 @@ const onSendContent = (content) => {
 </template>
 
 <style scoped>
-#main-app {
+#assistant-main-app {
   height: 100vh;
   display: grid;
   grid-template-rows: 50px 1fr auto;
+}
+.window-small #assistant-main-app {
+  height: 570px;
+  overflow-y: auto;
 }
 </style>

@@ -102,9 +102,49 @@ const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null, pa
   messagesQueue.value.push(newMessage);
 };
 
-const handleClickOnPergunta = async (empresaId, pergunta, outrasPerguntas=[]) => {
+const handleClickOnPergunta = async (empresaId, pergunta, outrasPerguntas=[], empresaNome=null) => {
   pushMessage(pergunta.pergunta, 0, null, true);
   await sleepTime(1000);
+
+  if (pergunta.id === 'dados-financeiros') {
+    if (!empresaNome) {
+      // algo deu errado
+      pushMessage('Não encontrei nenhuma informação sobre a ação. 😔', 100)
+      pushMessage('Por favor, tente novamente mais tarde.', 100);
+      return;
+    }
+    const matches = empresaNome.match(/(.*)\s\((.*)\)/);
+    if (!matches || matches.length < 3) {
+      // algo deu errado
+      pushMessage('Não encontrei nenhuma informação sobre a ação. 😔', 100)
+      pushMessage('Por favor, tente novamente mais tarde.', 100);
+      return;
+    }
+    const slug = matches[1];
+    const symbol = `BMFBOVESPA:${slug}`;
+    pushMessage('', 1500, [], false, null, 'analise-financeira', symbol);
+    setTimeout(() => {
+      pushMessage('Aqui estão as informações que encontrei. Você ainda pode:', 500, [
+        {
+          text: '🔍 Quero pesquisar por outro ativo...',
+          type: 'button',
+          action: () => handleDisplayAnaliseAcoes('Quero pesquisar por outro ativo')
+        },
+        {
+          text: 'Voltar ao menu',
+          type: 'button',
+          icon: faHome,
+          action: () => {
+            pushMessage('Voltar ao menu', 0, null, true);
+            setTimeout(() => {
+              handleBotoesIniciais('Em que posso te ajudar?');
+            }, 500);
+          }
+        }
+      ]);
+    }, 2000)
+    return;
+  }
 
   api.post(`api/bot/acoes/${empresaId}/perguntas/${pergunta.id}`)
     .then(async ({ data }) => {
@@ -113,8 +153,16 @@ const handleClickOnPergunta = async (empresaId, pergunta, outrasPerguntas=[]) =>
 
       pushMessage('', 1500, [], false, null, 'stock-guide', {
         name: data.empresa.name || '',
-        slug: data.empresa.slug || 's'
+        slug: data.empresa.slug || ''
       });
+
+      pushMessage('', 1500, [], false, null, 'symbol-profile', `BMFBOVESPA:${data.empresa.slug}`);
+
+      // se for a pergunta de saúde financeira, chama a análise financeira
+      if (data.empresa.slug && pergunta.pergunta === 'Qual é a Saúde Financeira atual da empresa?') {
+        const symbol = `BMFBOVESPA:${data.empresa.slug}`;
+        pushMessage('', 1500, [], false, null, 'analise-financeira', symbol);
+      }
 
       if (!outrasPerguntas || !outrasPerguntas.length) {
         pushMessage('Estas são as informações que tenho sobre a ação. 😊', 500, [
@@ -369,6 +417,7 @@ const handlePesquisarPorAnaliseTecnicas = async () => {
       const symbol = `BMFBOVESPA:${empresa.slug}`;
       pushMessage(`Pesquisando informações sobre a ação ${value}...`, 500);
       pushMessage('', 1500, [], false, null, 'analise-tecnica', symbol);
+      pushMessage('', 1500, [], false, null, 'symbol-profile', symbol);
       setTimeout(() => {
         pushMessage('Aqui estão as informações que encontrei. Você ainda pode:', 500, [
           {
@@ -416,6 +465,163 @@ const handlePesquisarPorAnaliseTecnicas = async () => {
   });
 }
 
+const handleAnalisarGraficoDasAcoes = async () => {
+  pushMessage('Gostaria de analisar o gráfico das ações de uma empresa', 0, null, true);
+  // add input para pesquisar ação
+  pushMessage('Qual empresa você gostaria de analisar?<br/>Exemplo: PETR4, VALE3, ITUB4, etc.', 800, null, false, null);
+  await sleepTime(1500);
+  waitForInputMessage().then(async (value) => {
+    if (!value || !value.trim()) {
+      pushMessage('Por favor, informe o nome da empresa que deseja analisar.', 100, [
+        {
+          text: 'Tentar novamente',
+          type: 'button',
+          icon: faRepeat,
+          action: () => {
+            handleAnalisarGraficoDasAcoes();
+          }
+        },
+        {
+          text: 'Voltar ao menu',
+          type: 'button',
+          icon: faHome,
+          action: () => {
+            pushMessage('Voltar ao menu', 0, null, true);
+            setTimeout(() => {
+              handleBotoesIniciais('Em que posso te ajudar?');
+            }, 500);
+          }
+        }
+      ]);
+      return;
+    }
+    api.post('api/bot/analise-tecnica/search', { slug: value }).then(({ data }) => {
+      const empresa = data.empresa || null;
+      if (!empresa) {
+        pushMessage('Não encontrei nenhuma ação com o nome informado. 😔', 100)
+        pushMessage('Você pode pesquisar por outro ativo.', 100, [
+          {
+            text: '🔍 Quero pesquisar por outro ativo...',
+            type: 'button',
+            action: () => {
+              handlePesquisarPorAnaliseTecnicas();
+            }
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+        return;
+      }
+      pushMessage(`Pesquisando informações sobre a ação ${value}...`, 500);
+      const symbol = `BMFBOVESPA:${value}`;
+      pushMessage('', 1500, [], false, null, 'advanced-chart', symbol);
+      setTimeout(() => {
+        pushMessage('Aqui estão as informações que encontrei. Você ainda pode:', 500, [
+          {
+            text: '🔍 Quero pesquisar por outro ativo...',
+            type: 'button',
+            action: () => handleAnalisarGraficoDasAcoes()
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+      }, 2000)
+    }).catch(() => {
+      pushMessage(`Não encontrei nenhuma informação sobre: ${value}. 😔`, 100);
+      pushMessage('Mas você pode pesquisar por outro ativo.', 100, [
+        {
+          text: 'Quero pesquisar por outro ativo...',
+          type: 'button',
+          action: () => {
+            handleAnalisarGraficoDasAcoes();
+          }
+        },
+        {
+          text: 'Voltar ao menu',
+          type: 'button',
+          icon: faHome,
+          action: () => {
+            pushMessage('Voltar ao menu', 0, null, true);
+            setTimeout(() => {
+              handleBotoesIniciais('Em que posso te ajudar?');
+            }, 500);
+          }
+        }
+      ]);
+    });
+  });
+}
+
+const handleVerificarMaioresAltasBolsasBR = () => {
+  pushMessage('Verificar maiores altas da bolsa BR', 0, null, true);
+  pushMessage('Ok! Vou buscar informações sobre as maiores altas da bolsa dos BR para você...', 1500);
+  pushMessage('', 1500, [], false, null, 'hotlists', 'BMFBOVESPA');
+  pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+    {
+      text: '🇺🇸 Verificar maiores altas da bolsa EUA',
+      type: 'button',
+      action: () => {
+        handleVerificarMaioresAltasBolsasBR();
+      }
+    },
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+}
+
+const handleVerificarMaioresAltasBolsasEua = () => {
+  pushMessage('Verificar maiores altas da bolsa EUA', 0, null, true);
+  pushMessage('Ok! Vou buscar informações sobre as maiores altas da bolsa dos EUA para você...', 1500);
+  pushMessage('', 1500, [], false, null, 'hotlists', 'US');
+  pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+    {
+      text: '🇧🇷 Verificar maiores altas da bolsa BR',
+      type: 'button',
+      action: () => {
+        handleVerificarMaioresAltasBolsasBR();
+      }
+    },
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+}
+
 const handleDisplayAnaliseAcoes = (title=null) => {
   pushMessage(title || 'Gostaria de analisar Ações', 0, null, true);
   pushMessage('Ótimo! Que tipo de Ánalise você gostaria de fazer?', 500, [
@@ -433,6 +639,21 @@ const handleDisplayAnaliseAcoes = (title=null) => {
       action: async () => handlePesquisarPorAnaliseTecnicas()
     },
     {
+      text: '📈 Analisar o gráfico das ações de uma empresa',
+      type: 'button',
+      action: () => handleAnalisarGraficoDasAcoes(),
+    },
+    {
+      text: '🇺🇸 Verificar maiores altas da bolsa EUA',
+      type: 'button',
+      action: () => handleVerificarMaioresAltasBolsasEua(),
+    },
+    {
+      text: '🇧🇷 Verificar maiores altas da bolsa BR',
+      type: 'button',
+      action: () => handleVerificarMaioresAltasBolsasBR(),
+    },
+    {
       text: 'Voltar ao menu',
       type: 'button',
       icon: faHome,
@@ -446,108 +667,177 @@ const handleDisplayAnaliseAcoes = (title=null) => {
   ]);
 };
 
-const handleBotoesIniciais = async (title=null) => {
-  pushMessage(title || 'Em que posso te ajudar?', 1000, [
+const handleEntenderMercado = () => {
+  pushMessage('Como estão os mercados?', 0, null, true);
+  pushMessage('Escolha abaixo um dos mercados para que eu possa te ajudar:', 1000, [
     {
-      text: '💰 Gostaria de analisar Renda Fixa',
+      text: '🇺🇸 Como está o mercado Americano?',
       type: 'button',
-      action: async () => {
-        pushMessage('Quais são os melhores títulos de renda fixa para se investir?', 0, null, true);
-        setTimeout(() => {
-          api.post('api/bot/ativos')
-            .then(async ({ data }) => {
-              const buttons = [
-                {
-                  text: 'Simule 100 mil reais aplicados em cada título e compare o resultado no vencimento',
-                  type: 'button',
-                  action: () => {
-                    pushMessage('Simule 100 mil reais aplicados em cada título e compare o resultado no vencimento', 0, null, true);
-                    setTimeout(() => {
-                      pushMessage('Ok! Vou simular 100 mil reais aplicados em cada título e comparar o resultado no vencimento...', 500);
-                      setTimeout(() => {
-                        api.post('api/bot/simulacao').then(({ data }) => {
-                          pushMessage('Aqui estão os resultados da simulação...', 500);
-                          for (let line in data.results) {
-                            pushMessage(`${data.results[line]}`, 50);
-                          }
-                          const buttons = [
-                            {
-                              text: '🙋‍♂️ Gostaria que um especialista me apresentasse esses produtos',
-                              type: 'button',
-                              action: () => {
-                                handleMandaMenuEspecialista('Menu Renda Fixa', 'Gostaria que um especialista me apresentasse esses produtos');
-                              }
-                            },
-                            {
-                              text: 'Voltar ao menu',
-                              type: 'button',
-                              icon: faHome,
-                              action: () => {
-                                pushMessage('Voltar ao menu', 0, null, true);
-                                setTimeout(() => {
-                                  handleBotoesIniciais('Em que posso te ajudar?');
-                                }, 500);
-                              }
-                            }
-                          ];
-                          pushMessage('O que você gostaria de fazer?', 1000, buttons);
-                        }).catch(error => {
-                          pushMessage('Ocorreu um erro ao realizar a simulação. 😔', 100);
-                          pushMessage('Por favor, tente novamente mais tarde.', 100);
-                        });
-                      }, 500);
-                    }, 500);
-                  }
-                },
-                {
-                  text: '🙋‍♂️ Gostaria que um especialista me apresentasse esses produtos',
-                  type: 'button',
-                  action: () => {
-                    handleMandaMenuEspecialista('Menu Renda Fixa', 'Gostaria que um especialista me apresentasse esses produtos');
-                  }
-                },
-                {
-                  text: 'Voltar ao menu',
-                  type: 'button',
-                  icon: faHome,
-                  action: () => {
-                    pushMessage('Voltar ao menu', 0, null, true);
-                    setTimeout(() => {
-                      handleBotoesIniciais('Em que posso te ajudar?');
-                    }, 500);
-                  }
-                }
-              ];
-              pushMessage(`Separei aqui alguns títulos de renda fixa para você:`, 1000);
-              for (let line in data.results) {
-                pushMessage(`${data.results[line]}`, 50);
-              }
-              pushMessage('O que você gostaria de fazer?', 1000, buttons);
-            })
-            .catch(error => {
-              const statusCode = error.response.status || 500;
-              if (statusCode === 404) {
-                pushMessage('Não encontrei nenhum título de renda fixa para te mostrar. 😔', 1000);
-                pushMessage('Por favor, tente novamente mais tarde.', 500, [
-                  {
-                    text: 'Voltar ao menu',
-                    type: 'button',
-                    icon: faHome,
-                    action: () => {
-                      pushMessage('Voltar ao menu', 0, null, true);
-                      setTimeout(() => {
-                        handleBotoesIniciais('Em que posso te ajudar?');
-                      }, 500);
-                    }
-                  }
-                ]);
-                return;
-              }
-              console.log(error);
-            });
-        }, 500);
+      action: () => {
+        pushMessage('Como está o mercado Americano?', 0, null, true);
+        pushMessage('Ok! Vou buscar informações sobre o mercado Americano para você...', 1500);
+        pushMessage('', 1500, [], false, null, 'symbol-info', 'OANDA:SPX500USD');
+        pushMessage('', 1500, [], false, null, 'stock-heatmap', 'SPX500');
+        pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+          {
+            text: 'Entender outro mercado',
+            type: 'button',
+            action: () => {
+              setTimeout(() => {
+                handleEntenderMercado();
+              }, 500);
+            }
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
       }
     },
+    {
+      text: '🇧🇷 Como está o mercado Brasileiro?',
+      type: 'button',
+      action: () => {
+        pushMessage('Como está o mercado Brasileiro?', 0, null, true);
+        pushMessage('Ok! Vou buscar informações sobre o mercado Brasileiro para você...', 1500);
+        pushMessage('', 1500, [], false, null, 'symbol-info', 'IBOV');
+        pushMessage('', 1500, [], false, null, 'stock-heatmap', 'IBOV');
+        pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+          {
+            text: 'Entender outro mercado',
+            type: 'button',
+            action: () => {
+              setTimeout(() => {
+                handleEntenderMercado();
+              }, 500);
+            }
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+      }
+    },
+    {
+      text: '💰 Como estão as Criptomoedas?',
+      type: 'button',
+      action: () => {
+        pushMessage('Como estão as Criptomoedas?', 0, null, true);
+        pushMessage('Ok! Vou buscar informações sobre as Criptomoedas para você...', 1500);
+        pushMessage('', 1500, [], false, null, 'crypto-coins-heatmap', '');
+        pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+          {
+            text: 'Entender outro mercado',
+            type: 'button',
+            action: () => {
+              setTimeout(() => {
+                handleEntenderMercado();
+              }, 500);
+            }
+          },
+          {
+            text: 'Voltar ao menu',
+            type: 'button',
+            icon: faHome,
+            action: () => {
+              pushMessage('Voltar ao menu', 0, null, true);
+              setTimeout(() => {
+                handleBotoesIniciais('Em que posso te ajudar?');
+              }, 500);
+            }
+          }
+        ]);
+      }
+    },
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+}
+
+const handleNoticiasDoMercado = () => {
+  pushMessage('Quais são as principais notícias do mercado hoje?', 0, null, true);
+  pushMessage('Ok! Vou buscar as principais notícias do mercado para você...', 1500);
+  pushMessage('', 1500, [], false, null, 'rss-magazine', '');
+  pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+}
+
+const handleAnalisarTaxasDeCambio = () => {
+  pushMessage('Analisar Taxas de Câmbio', 0, null, true);
+  pushMessage('Ok! Vou buscar informações sobre as Taxas de Câmbio para você...', 1500);
+  pushMessage('', 1500, [], false, null, 'currency-exchange', '');
+  pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+}
+
+const handleVerCalendarioEconomico = () => {
+  pushMessage('Ver Calendário Econômico', 0, null, true);
+  pushMessage('Ok! Vou buscar informações sobre o Calendário Econômico para você...', 1500);
+  pushMessage('', 1500, [], false, null, 'economic-calendar', '');
+  pushMessage('Espero ter ajudado! 😊 <br/> Caso precise de mais alguma coisa, estou por aqui.', 500, [
+    {
+      text: 'Voltar ao menu',
+      type: 'button',
+      icon: faHome,
+      action: () => {
+        pushMessage('Voltar ao menu', 0, null, true);
+        setTimeout(() => {
+          handleBotoesIniciais('Em que posso te ajudar?');
+        }, 500);
+      }
+    }
+  ]);
+}
+
+const handleBotoesIniciais = async (title=null) => {
+  pushMessage(title || 'Em que posso te ajudar?', 1000, [
     {
       text: '📈 Gostaria de analisar Ações',
       type: 'button',
@@ -563,6 +853,26 @@ const handleBotoesIniciais = async (title=null) => {
           handleEscolherCenarioEconomico();
         }, 1000);
       }
+    },
+    {
+      text: '💲 Como estão os mercados?',
+      type: 'button',
+      action: () => handleEntenderMercado()
+    },
+    {
+      text: '📰 Quais são as principais notícias do mercado hoje?',
+      type: 'button',
+      action: () => handleNoticiasDoMercado()
+    },
+    {
+      text: '🔄 Analisar Taxas de Câmbio',
+      type: 'button',
+      action: () => handleAnalisarTaxasDeCambio(),
+    },
+    {
+      text: '📅 Ver Calendário Econômico',
+      type: 'button',
+      action: () => handleVerCalendarioEconomico(),
     },
     {
       text: '📚 Eu não entendo nada sobre investimentos e gostaria de aprender a investir!',
@@ -711,7 +1021,7 @@ const handleMandarEscolherEmpresa = async (title=null) => {
               return {
                 text: pergunta.pergunta,
                 type: 'pergunta',
-                action: () => handleClickOnPergunta(empresa.id, pergunta, data.perguntas.filter(p => p.id !== pergunta.id))
+                action: () => handleClickOnPergunta(empresa.id, pergunta, data.perguntas.filter(p => p.id !== pergunta.id), empresa.name)
               };
             });
             pushMessage(`Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 2000, buttons);
@@ -798,8 +1108,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div id="container">
-    <div id="content">
+  <div id="assistant-container">
+    <div id="assistant-content">
       <chat-message
         v-for="message in messages"
         :key="message.uuid"
@@ -809,27 +1119,35 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-#container {
+<style>
+.window-small #assistant-container {
+  width: 97%;
+}
+
+.window-small #assistant-content {
+  height: 350px;
+}
+
+#assistant-container {
   width: 700px;
   margin: 1rem auto 0 auto;
   max-height: calc(100vh - 200px);
 }
 
 @media screen and (max-width: 800px) {
-  #container {
+  #assistant-container {
     width: 95%;
     height: calc(100vh - 245px);
   }
 }
 
 @media screen and (min-width: 1201px) {
-  #container {
+  #assistant-container {
     width: 1200px;
   }
 }
 
-#content {
+#assistant-content {
   display: flex;
   flex-direction: column-reverse;
   height: 100%;
@@ -838,7 +1156,7 @@ onMounted(async () => {
 }
 
 @media screen and (max-width: 430px) {
-  #content {
+  #assistant-content {
     padding: 0 10px;
   }
 }

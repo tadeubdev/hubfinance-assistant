@@ -18,8 +18,8 @@ store.watch(() => store.state.inputAllowed, (newValue) => {
   content.value = '';
   if (newValue) {
     setTimeout(() => {
-      document.querySelector('#footer-search-content input').focus();
-      document.querySelector('#footer-search-content').classList.add('focus');
+      document.querySelector('#assistant-footer-search-content input').focus();
+      document.querySelector('#assistant-footer-search-content').classList.add('focus');
     }, 100);
     return;
   }
@@ -50,10 +50,10 @@ const onContentInput = (event) => {
 </script>
 
 <template>
-  <footer id="footer">
+  <footer id="assistant-footer">
     <form @submit.prevent="handleSubmitForm">
       <div
-        id="footer-search-content"
+        id="assistant-footer-search-content"
         :class="{ disabled: !inputAllowed }"
         :title="!inputAllowed ? 'Aguarde até que o chat te pergunte algo...' : 'Digite sua mensagem'"
       >
@@ -71,7 +71,7 @@ const onContentInput = (event) => {
           :disabled="!inputAllowed"
         >Enviar</button>
       </div>
-      <div id="footer-description">
+      <div id="assistant-footer-description">
         <p>
           O chat pode conter erros. Verifique sempre as informações com o seu gerente de conta.
         </p>
@@ -80,31 +80,35 @@ const onContentInput = (event) => {
   </footer>
 </template>
 
-<style scoped>
-#footer {
+<style>
+.window-small #assistant-footer {
+  width: 97%;
+}
+
+#assistant-footer {
   width: 700px;
   margin: 1rem auto 0 auto;
 }
 
 @media screen and (max-width: 800px) {
-  #footer {
+  #assistant-footer {
     width: 95%;
   }
 }
 
 @media screen and (min-width: 1201px) {
-  #footer {
+  #assistant-footer {
     width: 1200px;
   }
 }
 
-#footer form {
+#assistant-footer form {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-#footer-search-content {
+#assistant-footer-search-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -114,22 +118,22 @@ const onContentInput = (event) => {
   border-radius: 17px;
 }
 
-#footer-search-content.disabled,
-#footer-search-content.disabled * {
+#assistant-footer-search-content.disabled,
+#assistant-footer-search-content.disabled * {
   cursor: not-allowed;
 }
 
-#footer-search-content.focus {
+#assistant-footer-search-content.focus {
   border-color: #999;
 }
 
-#footer-search-content button:active,
-#footer-search-content button:focus,
-#footer-search-content button:hover {
+#assistant-footer-search-content button:active,
+#assistant-footer-search-content button:focus,
+#assistant-footer-search-content button:hover {
   background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2));
 }
 
-#footer-search-content input {
+#assistant-footer-search-content input {
   width: 87%;
   padding: 1.0rem 1.0rem;
   border: none;
@@ -140,7 +144,7 @@ const onContentInput = (event) => {
   border-radius: 20px;
 }
 
-#footer-search-content button {
+#assistant-footer-search-content button {
   padding: 0.7rem 1.1rem;
   background-color: var(--primary-color);
   color: #fff;
@@ -150,20 +154,20 @@ const onContentInput = (event) => {
   transition: background-color 0.3s;
 }
 
-#footer-search-content button:disabled {
+#assistant-footer-search-content button:disabled {
   background-color: #999;
   color: #ccc;
   cursor: not-allowed;
 }
 
-#footer-search-content button:active:not(:disabled),
-#footer-search-content button:focus:not(:disabled),
-#footer-search-content button:hover:not(:disabled) {
+#assistant-footer-search-content button:active:not(:disabled),
+#assistant-footer-search-content button:focus:not(:disabled),
+#assistant-footer-search-content button:hover:not(:disabled) {
   background-color: var(--primary-color);
   color: #fff;
 }
 
-#footer-description {
+#assistant-footer-description {
   display: flex;
   justify-content: center;
   align-items: center;
