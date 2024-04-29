@@ -7,7 +7,7 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
   <header id="header">
     <h1>
       FLM
-      <span>v0.2</span>
+      <span>v0.4</span>
     </h1>
   </header>
 </template>
