@@ -200,7 +200,7 @@ const handleClickOnPergunta = async (empresaId, pergunta, outrasPerguntas=[], em
         return {
           text: pergunta.pergunta,
           type: 'pergunta',
-          action: () => handleClickOnPergunta(empresaId, pergunta, outrasPerguntas.filter(p => p.id !== pergunta.id))
+          action: () => handleClickOnPergunta(empresaId, pergunta, outrasPerguntas.filter(p => p.id !== pergunta.id), data.empresa? data.empresa.name: null)
         };
       }));
       await sleepTime(3000);
@@ -977,7 +977,7 @@ const handleMandarInputDePesquisarAcao = async (title=null, displayFirstTitle=tr
             return {
               text: pergunta.pergunta,
               type: 'pergunta',
-              action: () => handleClickOnPergunta(empresa.id, pergunta, data.perguntas.filter(p => p.id !== pergunta.id))
+              action: () => handleClickOnPergunta(empresa.id, pergunta, data.perguntas.filter(p => p.id !== pergunta.id), empresa.name || null)
             };
           });
           pushMessage(`Ok! Separei aqui algumas perguntas que você pode fazer sobre a ação ${empresa.name}:`, 2000, buttons);
