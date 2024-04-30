@@ -855,7 +855,7 @@ const handleBotoesIniciais = async (title=null) => {
       }
     },
     {
-      text: '💲 Como estão os mercados?',
+      text: '💸 Como estão os mercados?',
       type: 'button',
       action: () => handleEntenderMercado()
     },

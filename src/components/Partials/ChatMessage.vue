@@ -62,7 +62,7 @@ const handleOnKeyUp = (value) => {
         <economic-calendar />
       </div>
       <div class="assistant-message-partial assistant-message-hotlists" v-if="partial === 'hotlists'">
-        <hotlists />
+        <hotlists :symbol="partialData" />
       </div>
       <div class="assistant-message-partial assistant-message-symbol-profile" v-if="partial === 'symbol-profile'">
         <symbol-profile :symbol="partialData" />
@@ -291,6 +291,12 @@ const handleOnKeyUp = (value) => {
   margin: 20px 0;
 }
 .assistant-message-hotlists {
+  width: 100%;
+  max-width: 100%;
+  height: 550px;
+  margin: 20px 0;
+}
+.assistant-message-analise-financeira {
   width: 100%;
   max-width: 100%;
   height: 550px;
