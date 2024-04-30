@@ -302,6 +302,14 @@ const handleOnKeyUp = (value) => {
   height: 550px;
   margin: 20px 0;
 }
+@media screen and (max-width: 500px) {
+  .assistant-message-partial,
+  .assistant-message-partial div ,
+  .assistant-message-partial div iframe {
+    width: calc(100vw - 50px) !important;
+    max-width: calc(100vw - 50px) !important;
+  }
+}
 @keyframes slide-up {
   from {
     transform: translateY(100%);
