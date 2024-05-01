@@ -47,7 +47,7 @@ const waitForInputMessage = () => {
 
 const moveChatToBottom = () => {
   setTimeout(() => {
-    const chatContainer = document.getElementById('content');
+    const chatContainer = document.getElementById('assistant-content');
     if (chatContainer) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
