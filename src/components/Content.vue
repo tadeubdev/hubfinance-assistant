@@ -156,7 +156,7 @@ const handleClickOnPergunta = async (empresaId, pergunta, outrasPerguntas=[], em
         slug: data.empresa.slug || ''
       });
 
-      pushMessage('', 1500, [], false, null, 'symbol-profile', `BMFBOVESPA:${data.empresa.slug}`);
+      // pushMessage('', 1500, [], false, null, 'symbol-profile', `BMFBOVESPA:${data.empresa.slug}`);
 
       // se for a pergunta de saúde financeira, chama a análise financeira
       if (data.empresa.slug && pergunta.pergunta === 'Qual é a Saúde Financeira atual da empresa?') {
@@ -417,7 +417,7 @@ const handlePesquisarPorAnaliseTecnicas = async () => {
       const symbol = `BMFBOVESPA:${empresa.slug}`;
       pushMessage(`Pesquisando informações sobre a ação ${value}...`, 500);
       pushMessage('', 1500, [], false, null, 'analise-tecnica', symbol);
-      pushMessage('', 1500, [], false, null, 'symbol-profile', symbol);
+      // pushMessage('', 1500, [], false, null, 'symbol-profile', symbol);
       setTimeout(() => {
         pushMessage('Aqui estão as informações que encontrei. Você ainda pode:', 500, [
           {
