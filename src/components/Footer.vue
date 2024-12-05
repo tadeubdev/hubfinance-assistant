@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import {computed} from 'vue';
 import {useStore} from "vuex";
 
@@ -12,7 +12,8 @@ const store = useStore('store');
 const content = ref('');
 
 // create message const by store
-const inputAllowed = computed(() => store.state.inputAllowed);
+// const inputAllowed = computed(() => store.state.inputAllowed);
+const inputAllowed = computed(() => true);
 
 store.watch(() => store.state.inputAllowed, (newValue) => {
   content.value = '';
@@ -26,7 +27,7 @@ store.watch(() => store.state.inputAllowed, (newValue) => {
 });
 
 const handleSubmitForm = () => {
-  if (!content.value) {
+  if (!content.value || !inputAllowed) {
     return;
   }
   props.sendContent(content.value);
@@ -41,6 +42,9 @@ const onContentBlur = (event) => {
 }
 
 const onContentInput = (event) => {
+  if (!inputAllowed) {
+    return;
+  }
   if (event.target.value) {
     event.target.parentElement.classList.add('with-text');
   } else {
@@ -61,7 +65,6 @@ const onContentInput = (event) => {
           type="text" 
           placeholder="Faria Lima AI Chat"
           v-model="content"
-          :disabled="!inputAllowed"
           @focus="onContentFocus"
           @blur="onContentBlur"
           @input="onContentInput"

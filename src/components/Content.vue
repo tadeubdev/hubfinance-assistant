@@ -18,6 +18,8 @@ const pagination = ref({
   total: 0,
   lastPage: 0
 });
+const isTalkingToAI = ref(false);
+const isWaitingAI = ref(false);
 
 const store = useStore('store');
 
@@ -25,11 +27,42 @@ const onInputMessageChange = ref(undefined);
 
 // on inputMessage from store
 store.watch(() => store.state.inputMessage, (value) => {
+  if (waitingForInput.value === false && isTalkingToAI.value === false) {
+    onTalkToAI(value);
+  }
   if (onInputMessageChange.value) {
     onInputMessageChange.value(value);
   }
   onInputMessageChange.value = () => {};
 });
+
+const onTalkToAI = (value) => {
+  if (!value || !value.trim()) {
+    return;
+  }
+  pushMessage(value, 0, null, true);
+  pushMessage('Aguarde um momento, estou buscando informações...', 1200);
+  isTalkingToAI.value = true;
+  setTimeout(() => {
+    isWaitingAI.value = true;
+  }, 2000);
+  store.commit('setInputAllowed', false);
+  store.commit('setInputAllowed', true);
+  api.post('api/bot/ai', { message: value })
+    .then(async ({ data }) => {
+      const message = data.message || 'Ops! Não entendi o que você quis dizer. 😔';
+      pushMessage(message, 500);
+    })
+    .catch(() => {
+      pushMessage('Ocorreu um erro ao tentar falar com a IA. 😔', 100);
+    })
+    .finally(() => {
+      isWaitingAI.value = false;
+      waitingForInput.value = false;
+      isTalkingToAI.value = false;
+      store.commit('setInputAllowed', true);
+    });
+};
 
 const waitForInputMessage = () => {
   return new Promise(async (resolve) => {
@@ -45,13 +78,22 @@ const waitForInputMessage = () => {
   });
 };
 
-const moveChatToBottom = () => {
+const moveChatToBottom = (retrying = false) => {
   setTimeout(() => {
     const chatContainer = document.getElementById('assistant-content');
     if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      // Verifique se o conteúdo tem altura suficiente para rolagem
+      if (chatContainer.scrollHeight > chatContainer.clientHeight) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (!retrying) {
+        // Tente novamente após um breve intervalo
+        moveChatToBottom(true);
+      }
+    } else if (!retrying) {
+      // Tente novamente após um breve intervalo se o container não for encontrado
+      moveChatToBottom(true);
     }
-  }, 100);
+  }, 1000);
 };
 
 const popMessage = () => {
@@ -92,10 +134,10 @@ setInterval(watchMessagesQueue, 500);
 const pushMessage = (message, time=0, buttons=null, fromMe=false, input=null, partial=null, partialData=null) => {
   const author = fromMe ? {
     name: 'Você',
-    image: 'https://ip.hubfinanceiro.com/assistant/avatar.png'
+    image: 'https://api.hubfinanceiro.com/assistant/avatar.png'
   } : {
     name: 'FariaLima AI',
-    image: 'https://ip.hubfinanceiro.com/assistant/icon.png'
+    image: 'https://api.hubfinanceiro.com/assistant/icon.png'
   };
   const uuid = uuidv4();
   const newMessage = { uuid, author, time, fromMe, message, buttons, input, partial, partialData };
@@ -1110,6 +1152,9 @@ onMounted(async () => {
 <template>
   <div id="assistant-container">
     <div id="assistant-content">
+      <div id="waiting-ai-answer" v-if="isWaitingAI">
+        <div class="loader"></div>
+      </div>
       <chat-message
         v-for="message in messages"
         :key="message.uuid"
@@ -1159,5 +1204,25 @@ onMounted(async () => {
   #assistant-content {
     padding: 0 10px;
   }
+}
+#waiting-ai-answer {
+  height: 80px;
+  background: #222222;
+}
+.loader {
+  width: 60px;
+  aspect-ratio: 4;
+  --_g: no-repeat radial-gradient(circle closest-side,rgba(255,255,255,.5) 90%, transparent);
+  background: 
+    var(--_g) 0%   50%,
+    var(--_g) 50%  50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100%/3) 100%;
+  animation: l7 1s infinite linear;
+}
+@keyframes l7 {
+    33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
+    50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
+    66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
 }
 </style>
